@@ -5,272 +5,332 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clock Screensaver</title>
     <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    transition: background-color 0.5s ease, color 0.5s ease;
-    overflow: hidden; /* Hide scrollbars for screensaver effect */
-    cursor: none; /* Hide cursor for screensaver effect */
-}
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            overflow: hidden; /* Hide scrollbars */
+            /* cursor: none; <- REMOVED: Cursor hiding is now handled by JS */
+        }
 
-#clock-container {
-    text-align: center;
-}
+        #clock-container {
+            text-align: center;
+        }
 
-#clock {
-    font-size: 8rem; /* Responsive font size */
-    font-weight: bold;
-    letter-spacing: 2px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
+        #clock {
+            font-size: 8rem; /* Responsive font size */
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
 
-#date-display {
-    font-size: 1.5rem;
-    margin-top: 10px;
-    opacity: 0.7;
-    display: none; /* Hide date initially */
-}
+        #date-display {
+            font-size: 1.5rem;
+            margin-top: 10px;
+            opacity: 0.7;
+            display: none; /* Hide date initially */
+            min-height: 1.8rem; /* Prevent layout shift when date appears/disappears */
+        }
 
-#controls {
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 15px;
-    opacity: 0; /* Hidden by default */
-    transition: opacity 0.3s ease-in-out;
-    cursor: default; /* Show cursor over controls */
-}
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+            justify-content: center;
+            gap: 10px 15px; /* Row gap, Column gap */
+            opacity: 0; /* Hidden by default */
+            transition: opacity 0.3s ease-in-out;
+            cursor: default; /* Show default cursor over controls */
+            z-index: 10; /* Ensure controls are clickable */
+        }
 
-body:hover #controls,
-body:active #controls {
-    opacity: 1;
-}
-
-
-#controls button {
-    padding: 10px 15px;
-    font-size: 1rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    background-color: rgba(255, 255, 255, 0.2);
-    color: inherit; /* Inherit color from body for theme consistency */
-    transition: background-color 0.3s ease;
-}
-
-#controls button:hover {
-    background-color: rgba(255, 255, 255, 0.4);
-}
-
-/* --- Themes --- */
-.theme-dark {
-    background-color: #1a1a1a;
-    color: #e0e0e0;
-}
-.theme-dark #controls button {
-     background-color: rgba(255, 255, 255, 0.1);
-     color: #e0e0e0;
-}
-.theme-dark #controls button:hover {
-     background-color: rgba(255, 255, 255, 0.2);
-}
+        /* Show controls on hover/interaction - Handled by JS now for idle timer */
+        /* body:hover #controls,
+           body:active #controls {
+             opacity: 1;
+           } */
 
 
-.theme-light {
-    background-color: #f0f0f0;
-    color: #333;
-}
-.theme-light #controls button {
-     background-color: rgba(0, 0, 0, 0.1);
-     color: #333;
-}
-.theme-light #controls button:hover {
-     background-color: rgba(0, 0, 0, 0.2);
-}
+        #controls button {
+            padding: 10px 15px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: inherit; /* Inherit color from body for theme consistency */
+            transition: background-color 0.3s ease;
+            white-space: nowrap; /* Prevent button text wrapping */
+        }
 
-.theme-blue {
-    background: linear-gradient(to bottom, #3a7bd5, #00d2ff);
-    color: #ffffff;
-}
-.theme-blue #controls button {
-     background-color: rgba(255, 255, 255, 0.2);
-     color: #ffffff;
-}
-.theme-blue #controls button:hover {
-     background-color: rgba(255, 255, 255, 0.4);
-}
+        #controls button:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* --- Themes --- */
+        .theme-dark {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        .theme-dark #controls button {
+             background-color: rgba(255, 255, 255, 0.1);
+             color: #e0e0e0;
+        }
+        .theme-dark #controls button:hover {
+             background-color: rgba(255, 255, 255, 0.2);
+        }
 
 
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    #clock {
-        font-size: 6rem;
-    }
-    #date-display {
-        font-size: 1.2rem;
-    }
-    #controls {
-        bottom: 20px;
-        gap: 10px;
-    }
-    #controls button {
-        padding: 8px 12px;
-        font-size: 0.9rem;
-    }
-}
+        .theme-light {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .theme-light #controls button {
+             background-color: rgba(0, 0, 0, 0.1);
+             color: #333;
+        }
+        .theme-light #controls button:hover {
+             background-color: rgba(0, 0, 0, 0.2);
+        }
 
-@media (max-width: 480px) {
-    #clock {
-        font-size: 4rem;
-    }
-     #date-display {
-        font-size: 1rem;
-    }
-    #controls {
-       flex-direction: column; /* Stack buttons vertically on small screens */
-       align-items: center;
-       bottom: 10px;
-    }
-}
+        .theme-blue {
+            background: linear-gradient(to bottom, #3a7bd5, #00d2ff);
+            color: #ffffff;
+        }
+        .theme-blue #controls button {
+             background-color: rgba(255, 255, 255, 0.2);
+             color: #ffffff;
+        }
+        .theme-blue #controls button:hover {
+             background-color: rgba(255, 255, 255, 0.4);
+        }
+
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            #clock {
+                font-size: 6rem;
+            }
+            #date-display {
+                font-size: 1.2rem;
+                 min-height: 1.5rem;
+            }
+            #controls {
+                bottom: 20px;
+                gap: 8px 10px;
+            }
+            #controls button {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #clock {
+                font-size: 4rem;
+            }
+             #date-display {
+                font-size: 1rem;
+                 min-height: 1.2rem;
+            }
+            #controls {
+               /* Keep flex-wrap for wrapping */
+               bottom: 10px;
+            }
+        }
     </style>
 </head>
 <body class="theme-dark"> <div id="clock-container">
         <div id="clock">Loading...</div>
-        <div id="date-display"></div> </div>
+        <div id="date-display"></div>
+    </div>
 
     <div id="controls">
         <button id="toggle-format">Switch to 12-Hour</button>
         <button id="change-theme">Change Theme</button>
-        <button id="toggle-date">Show Date</button> </div>
+        <button id="toggle-date">Show Date</button>
+        <button id="change-date-format">Change Date Format</button> </div>
 
     <script>
-    // Get DOM elements
-const clockElement = document.getElementById('clock');
-const dateElement = document.getElementById('date-display');
-const toggleFormatButton = document.getElementById('toggle-format');
-const changeThemeButton = document.getElementById('change-theme');
-const toggleDateButton = document.getElementById('toggle-date');
-const bodyElement = document.body;
+        // Get DOM elements
+        const clockElement = document.getElementById('clock');
+        const dateElement = document.getElementById('date-display');
+        const toggleFormatButton = document.getElementById('toggle-format');
+        const changeThemeButton = document.getElementById('change-theme');
+        const toggleDateButton = document.getElementById('toggle-date');
+        const changeDateFormatButton = document.getElementById('change-date-format'); // New Button Ref
+        const controlsElement = document.getElementById('controls');
+        const bodyElement = document.body;
 
-// State variables
-let is24HourFormat = true; // Start with 24-hour format
-let showDate = false; // Start with date hidden
-let currentThemeIndex = 0;
-const themes = ['theme-dark', 'theme-light', 'theme-blue']; // CSS class names for themes
+        // --- State variables ---
+        let is24HourFormat = true; // Start with 24-hour format
+        let showDate = false; // Start with date hidden
+        let currentThemeIndex = 0;
+        const themes = ['theme-dark', 'theme-light', 'theme-blue']; // CSS class names for themes
 
-// --- Clock Update Function ---
-function updateClock() {
-    const now = new Date();
+        let currentDateFormatIndex = 0; // 0: Default, 1: American, 2: YYYY Month DD
+        const dateFormats = ['default', 'american', 'iso_like'];
 
-    let hours = now.getHours();
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    let ampm = '';
-
-    // Format hours based on the setting
-    if (!is24HourFormat) {
-        ampm = hours >= 12 ? ' PM' : ' AM';
-        hours = hours % 12;
-        hours = hours ? hours : 12; // Handle midnight (0 -> 12)
-    }
-
-    const hoursFormatted = String(hours).padStart(2, '0');
-
-    // Update clock display
-    clockElement.textContent = `${hoursFormatted}:${minutes}:${seconds}${ampm}`;
-
-    // Update date display if shown
-    if (showDate) {
-        updateDate(now);
-    }
-}
-
-// --- Date Update Function ---
-function updateDate(dateObject) {
-     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-     dateElement.textContent = dateObject.toLocaleDateString(undefined, options); // Use locale-specific format
-     dateElement.style.display = 'block';
-}
-
-// --- Event Listeners ---
-
-// Toggle time format (12/24 hour)
-toggleFormatButton.addEventListener('click', () => {
-    is24HourFormat = !is24HourFormat; // Flip the boolean
-    toggleFormatButton.textContent = is24HourFormat ? 'Switch to 12-Hour' : 'Switch to 24-Hour';
-    updateClock(); // Update immediately
-});
-
-// Change background theme
-changeThemeButton.addEventListener('click', () => {
-    // Remove current theme class
-    bodyElement.classList.remove(themes[currentThemeIndex]);
-
-    // Move to the next theme index, wrapping around
-    currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-
-    // Add the new theme class
-    bodyElement.classList.add(themes[currentThemeIndex]);
-});
-
-// Toggle date visibility
-toggleDateButton.addEventListener('click', () => {
-    showDate = !showDate;
-    if (showDate) {
-        updateDate(new Date()); // Show and update date immediately
-        toggleDateButton.textContent = 'Hide Date';
-    } else {
-        dateElement.style.display = 'none'; // Hide date element
-        toggleDateButton.textContent = 'Show Date';
-    }
-});
+        let idleTimer; // Timer for cursor/controls hiding
 
 
-// --- Initial Setup ---
+        // --- Clock Update Function ---
+        function updateClock() {
+            const now = new Date();
 
-// Set initial theme (already set in HTML, but good practice)
-bodyElement.classList.add(themes[currentThemeIndex]);
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            let ampm = '';
 
-// Call updateClock once immediately to avoid delay
-updateClock();
+            // Format hours based on the setting
+            if (!is24HourFormat) {
+                ampm = hours >= 12 ? ' PM' : ' AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12; // Handle midnight (0 -> 12)
+            }
 
-// Set an interval to update the clock every second (1000 milliseconds)
-setInterval(updateClock, 1000);
+            // Use padStart for single-digit hours in 12-hour format too
+            const hoursFormatted = String(hours).padStart(is24HourFormat ? 2 : 1, '0');
 
-// Hide controls after a delay if the user doesn't interact
-let controlTimeout;
-function hideControls() {
-    const controls = document.getElementById('controls');
-    controls.style.opacity = '0';
-}
 
-function showAndResetTimer() {
-     const controls = document.getElementById('controls');
-     controls.style.opacity = '1';
-     clearTimeout(controlTimeout); // Clear existing timer
-     controlTimeout = setTimeout(hideControls, 3000); // Hide after 3 seconds of inactivity
-}
+            // Update clock display
+            clockElement.textContent = `${hoursFormatted}:${minutes}:${seconds}${ampm}`;
 
-// Show controls initially and on mouse move, then hide after delay
-showAndResetTimer(); // Show on load
-document.addEventListener('mousemove', showAndResetTimer);
-document.addEventListener('touchstart', showAndResetTimer); // For touch devices
-document.addEventListener('click', showAndResetTimer); // Also show on click
+            // Update date display if shown
+            if (showDate) {
+                updateDate(now);
+            }
+        }
 
-// Initial button text setup
-toggleFormatButton.textContent = is24HourFormat ? 'Switch to 12-Hour' : 'Switch to 24-Hour';
-toggleDateButton.textContent = showDate ? 'Hide Date' : 'Show Date';
+        // --- Date Update Function ---
+        function updateDate(dateObject) {
+            const day = dateObject.getDate();
+            const month = dateObject.toLocaleDateString(undefined, { month: 'long' });
+            const year = dateObject.getFullYear();
+            const weekday = dateObject.toLocaleDateString(undefined, { weekday: 'long' });
+            const numericDay = String(day).padStart(2, '0'); // Ensure 2 digits for day
+
+            let formattedDate = '';
+            const currentFormat = dateFormats[currentDateFormatIndex];
+
+            switch(currentFormat) {
+                case 'american':
+                    // Weekday, Month DD, YYYY (American Style)
+                    formattedDate = `${weekday}, ${month} ${day}, ${year}`;
+                    // Or using options:
+                    // formattedDate = dateObject.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                    break;
+                case 'iso_like':
+                     // YYYY Month DD, Weekday
+                     formattedDate = `${year} ${month} ${numericDay}, ${weekday}`;
+                    break;
+                case 'default':
+                default:
+                    // Weekday, DD Month YYYY (Default International Style)
+                    formattedDate = `${weekday}, ${day} ${month} ${year}`;
+                    break;
+            }
+
+            dateElement.textContent = formattedDate;
+            dateElement.style.display = 'block'; // Ensure it's visible if showDate is true
+        }
+
+
+        // --- Controls and Cursor Visibility Logic ---
+        function hideControlsAndCursor() {
+            controlsElement.style.opacity = '0';
+            bodyElement.style.cursor = 'none'; // Hide cursor
+        }
+
+        function showControlsAndCursor() {
+             controlsElement.style.opacity = '1';
+             bodyElement.style.cursor = 'default'; // Show cursor
+             clearTimeout(idleTimer); // Clear existing timer
+             idleTimer = setTimeout(hideControlsAndCursor, 3000); // Hide after 3 seconds of inactivity
+        }
+
+
+        // --- Event Listeners ---
+
+        // Toggle time format (12/24 hour)
+        toggleFormatButton.addEventListener('click', () => {
+            is24HourFormat = !is24HourFormat; // Flip the boolean
+            toggleFormatButton.textContent = is24HourFormat ? 'Switch to 12-Hour' : 'Switch to 24-Hour';
+            updateClock(); // Update immediately
+        });
+
+        // Change background theme
+        changeThemeButton.addEventListener('click', () => {
+            bodyElement.classList.remove(themes[currentThemeIndex]);
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            bodyElement.classList.add(themes[currentThemeIndex]);
+        });
+
+        // Toggle date visibility
+        toggleDateButton.addEventListener('click', () => {
+            showDate = !showDate;
+            if (showDate) {
+                updateDate(new Date()); // Show and update date immediately
+                toggleDateButton.textContent = 'Hide Date';
+                changeDateFormatButton.style.display = 'inline-block'; // Show format button
+            } else {
+                dateElement.style.display = 'none'; // Hide date element
+                toggleDateButton.textContent = 'Show Date';
+                changeDateFormatButton.style.display = 'none'; // Hide format button when date is hidden
+            }
+        });
+
+        // Change Date Format
+        changeDateFormatButton.addEventListener('click', () => {
+            currentDateFormatIndex = (currentDateFormatIndex + 1) % dateFormats.length;
+             if (showDate) {
+                 updateDate(new Date()); // Update date display immediately if visible
+             }
+             // Optional: update button text to hint next format, or keep generic
+        });
+
+
+        // Interaction listeners to show controls/cursor and reset idle timer
+        document.addEventListener('mousemove', showControlsAndCursor);
+        document.addEventListener('mousedown', showControlsAndCursor); // Ensure click shows controls too
+        document.addEventListener('touchstart', showControlsAndCursor, { passive: true }); // For touch devices
+        document.addEventListener('scroll', showControlsAndCursor, { passive: true }); // If page happens to be scrollable
+
+        // --- Initial Setup ---
+
+        // Set initial theme class
+        bodyElement.classList.add(themes[currentThemeIndex]);
+
+        // Call updateClock once immediately to avoid delay
+        updateClock();
+
+        // Set an interval to update the clock every second (1000 milliseconds)
+        setInterval(updateClock, 1000);
+
+        // Initial button text setup
+        toggleFormatButton.textContent = is24HourFormat ? 'Switch to 12-Hour' : 'Switch to 24-Hour';
+        toggleDateButton.textContent = showDate ? 'Hide Date' : 'Show Date';
+
+        // Hide date format button initially if date is hidden
+        changeDateFormatButton.style.display = showDate ? 'inline-block' : 'none';
+
+        // Start the idle timer mechanism
+        showControlsAndCursor(); // Show controls/cursor initially, then start timer
+
     </script>
 </body>
 </html>
